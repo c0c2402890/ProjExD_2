@@ -2,6 +2,9 @@ import os
 import random
 import sys
 import pygame as pg
+import time
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
 WIDTH, HEIGHT = 1100, 650
@@ -58,9 +61,12 @@ def main():
         screen.blit(bg_img, [0, 0]) 
 
         # こうかとんRectと爆弾Rectが重なっていたら
-        if kk_rct.colliderect(bb_rct): 
-            print("Game Over")
-            return
+        #if kk_rct.colliderect(bb_rct): 
+            #print("Game Over")
+            #return
+        if kk_rct.colliderect(bb_rct):
+            gameover(screen)
+            return  # ゲーム終了
 
         key_lst = pg.key.get_pressed()
         sum_mv = [0, 0]
@@ -91,6 +97,34 @@ def main():
         pg.display.update()
         tmr += 1
         clock.tick(50)
+
+#演習1
+kk_img_gameover = pg.image.load("fig/8.png")
+kk_img_gameover = pg.transform.rotozoom(kk_img_gameover, 0, 0.9)
+
+def gameover(screen: pg.Surface) -> None:
+    """
+    ゲームオーバー画面を表示する関数
+
+    引数：
+        screen: ゲーム画面のSurfaceオブジェクト
+    """
+    # 半透明の黒い画面を描く
+    blackout = pg.Surface((1100, 650))
+    blackout.set_alpha(200)  # 半透明（0〜255）
+    blackout.fill((0, 0, 0))
+    screen.blit(blackout, (0, 0))
+
+    # 「Game Over」テキスト表示
+    fonto = pg.font.Font(None, 80)
+    txt = fonto.render("Game Over", True, (255, 255, 255))
+    screen.blit(txt, (450, 300))
+
+    # 泣いてるこうかとん画像を表示
+    screen.blit(kk_img_gameover, (500, 400))
+
+    pg.display.update()
+    time.sleep(2)
 
 
 if __name__ == "__main__":
