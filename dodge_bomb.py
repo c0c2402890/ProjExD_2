@@ -17,6 +17,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 def load_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
     """移動方向ごとのこうかとん画像を辞書で返す"""
     original_img = pg.image.load("fig/3.png")
+"""
     kk_imgs = {
         (0, 0): pg.transform.rotozoom(original_img, 0, 0.9),
         (+5, 0): pg.transform.rotozoom(original_img, -90, 0.9),
@@ -28,8 +29,9 @@ def load_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
         (0, +5): pg.transform.rotozoom(original_img, -270, 0.9),
         (+5, +5): pg.transform.rotozoom(original_img, -135, 0.9),
     }
+    
     return kk_imgs
-
+"""
 def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
     """移動量の合計値タプルに対応する向きの画像Surfaceを返す"""
     return kk_imgs.get(sum_mv, kk_imgs[(0, 0)])
