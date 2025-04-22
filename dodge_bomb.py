@@ -14,13 +14,38 @@ DELTA = {
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+def load_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
+    """移動方向ごとのこうかとん画像を辞書で返す"""
+    original_img = pg.image.load("fig/3.png")
+    kk_imgs = {
+        (0, 0): pg.transform.rotozoom(original_img, 0, 0.9),
+        (+5, 0): pg.transform.rotozoom(original_img, -90, 0.9),
+        (+5, -5): pg.transform.rotozoom(original_img, -45, 0.9),
+        (0, -5): pg.transform.rotozoom(original_img, 270, 0.9),
+        (-5, -5): pg.transform.rotozoom(original_img, 45, 0.9),
+        (-5, 0): pg.transform.rotozoom(original_img, 0, 0.9),
+        (-5, +5): pg.transform.rotozoom(original_img, 45, 0.9),
+        (0, +5): pg.transform.rotozoom(original_img, -270, 0.9),
+        (+5, +5): pg.transform.rotozoom(original_img, -135, 0.9),
+    }
+    return kk_imgs
+
+def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
+    """移動量の合計値タプルに対応する向きの画像Surfaceを返す"""
+    return kk_imgs.get(sum_mv, kk_imgs[(0, 0)])
+
 def main():
+    global kk_imgs
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
-    bg_img = pg.image.load("fig/pg_bg.jpg")    
-    kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
+    bg_img = pg.image.load("fig/pg_bg.jpg")
+
+    # こうかとん画像辞書の読み込み
+    kk_imgs = load_kk_imgs()
+    kk_img = kk_imgs[(0, 0)]
     kk_rct = kk_img.get_rect()
     kk_rct.center = 300, 200
+    last_mv = (0, 0)  # 最後の移動方向
 
     # 爆弾画像と加速度のリスト作成
     bb_accs = [a for a in range(1, 11)]
@@ -46,10 +71,12 @@ def main():
 
         screen.blit(bg_img, [0, 0])
 
+        # 衝突判定
         if kk_rct.colliderect(bb_rct):
             game_over(screen)
             return
 
+        # キー入力処理
         key_lst = pg.key.get_pressed()
         sum_mv = [0, 0]
         for key, mv in DELTA.items():
@@ -57,12 +84,19 @@ def main():
                 sum_mv[0] += mv[0]
                 sum_mv[1] += mv[1]
 
+        # こうかとん移動
         kk_rct.move_ip(sum_mv)
         if check_bound(kk_rct) != (True, True):
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
+
+        # 向き更新
+        mv = tuple(sum_mv)
+        if mv != (0, 0):
+            last_mv = mv
+        kk_img = get_kk_img(last_mv)
         screen.blit(kk_img, kk_rct)
 
-        # 時間に応じた爆弾の更新
+        # 爆弾更新（加速＆拡大）
         index = min(tmr // 500, 9)
         bb_img = bb_imgs[index]
         avx = vx * bb_accs[index]
@@ -76,8 +110,8 @@ def main():
             vx *= -1
         if not tate:
             vy *= -1
-
         screen.blit(bb_img, bb_rct)
+
         pg.display.update()
         tmr += 1
         clock.tick(50)
